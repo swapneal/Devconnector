@@ -68,7 +68,7 @@ router.post('/login', (req, res) => {
         msg: 'Email not found'
       })
     }
-  }).catch(err => console.log('Error in user email: '+ err));
+  }).catch(err => console.log('Error in user email: '+ err))
 })
 
 
