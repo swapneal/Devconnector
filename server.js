@@ -1,5 +1,6 @@
 const express = require('express'); //import express
 const mongoose = require('mongoose'); //import mongoose
+const passport = require('passport'); //import passport for authentication
 
 //create routes
 const users = require('./routes/api/users');
@@ -8,6 +9,8 @@ const profile = require('./routes/api/profile');
 
 //body parser
 const bodyParser = require('body-parser');
+
+
 
 //db config
 const db = require('./config/keys').mongoURI; //here we have import the only required key from config file
@@ -23,6 +26,12 @@ mongoose.connect(db).then(() => console.log('mongodb connection successful')).ca
 //body parser middleware
 app.use(bodyParser.urlencoded({extended: false})); //using default form of encoding in the url
 app.use(bodyParser.json()); //using json while passing the data
+
+
+//Passport configuration
+app.use(passport.initialize());
+require('./config/passport')(passport);
+
 
 
 app.get('/', (req,res) => res.send('hello')); //creating first route - get route. '/' is home page, execute arrow function. Basically this is GET request

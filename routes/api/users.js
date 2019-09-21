@@ -1,6 +1,9 @@
 const express = require('express');
 const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const keys = require('../../config/keys');
+const passport = require('passport');
 
 
 const router = express.Router();
@@ -65,11 +68,51 @@ router.post('/login', (req, res) => {
   User.findOne({email}).then(user => {
     if (!user){
       return res.status(404).json({
-        msg: 'Email not found'
-      })
-    }
-  }).catch(err => console.log('Error in user email: '+ err))
+        msg: 'User not found'
+      });
+    } 
+    bcrypt.compare(password, user.password)   //password is plain text, user.password is the encrypted password stored in db
+     .then(isMatch => {
+       if (!isMatch){
+         return res.status(400).json({
+           password: 'Password does not match'
+         });
+       }
+       const payload = {
+         id: user.id,
+         name: user.name,
+         avatar: user.avatar
+       };
+       jwt.sign(
+         payload, 
+         keys.secretOrKey,
+         {expiresIn: 3600},
+         (err, token) => {
+           if (err) throw err;
+
+           return res.json({
+             success: true,
+             token: 'Bearer ' + token
+           })
+         }
+         )
+     //  return res.json(payload);
+     }) 
+     .catch(err => console.log('Error in password comparsion: '+ err));
+  }).catch(err => console.log('Error in user email: '+ err));
 })
+
+// @route GET api/users/current
+// @desc return current user
+// @access private route which will have 3 parameter function with route name, passport authenticate and if authenticate successful, then arrow function 
+router.get(
+  '/current', 
+  passport.authenticate('jwt', {session: false}),
+  (req, res) => {
+    res.json({msg: 'success'});
+
+})
+
 
 
 module.exports = router;
