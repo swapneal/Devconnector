@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const keys = require('../../config/keys');
 const passport = require('passport');
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 
 const router = express.Router();
@@ -21,12 +23,21 @@ const User = require('../../models/User');
 // @desc Register a user
 // @access public route 
 router.post('/register', (req,res) => {
+
+  const {errors, isValid} = validateRegisterInput(req.body);
+
+  //using validators
+  if (!isValid){
+    return res.status(400).json(errors);
+  }
   User.findOne({email: req.body.email})
   .then(user => {
     if(user) {
-      return res.status(400).json({   //using BAD request response code of 400, if status is not provided then executed code will be status 200
-        email: 'Email already exists'  //this email variable is unique from above email variable as this is for response
-      })
+      errors.email = 'Email already exists';
+      return res.status(400).json(errors);
+      //   {   //using BAD request response code of 400, if status is not provided then executed code will be status 200
+      //   email: 'Email already exists'  //this email variable is unique from above email variable as this is for response
+      // })
     } else {
      // return res.status(200).json({msg: 'success'});
       
@@ -61,22 +72,37 @@ router.post('/register', (req,res) => {
 // @desc user login, return JWT token
 // @access public route 
 router.post('/login', (req, res) => {
+  
+  const {errors, isValid} = validateLoginInput(req.body);
+
+  //using validators
+  if (!isValid){
+    return res.status(400).json(errors);
+  }
+  
   const email = req.body.email;
   const password = req.body.password;
+ 
 
   //find user by email
   User.findOne({email}).then(user => {
     if (!user){
-      return res.status(404).json({
-        msg: 'User not found'
-      });
+      errors.email = 'User not found';
+      return res.status(400).json(errors);
+      
+      // return res.status(404).json({
+      //   email: 'User not found'
+      // });
     } 
     bcrypt.compare(password, user.password)   //password is plain text, user.password is the encrypted password stored in db
      .then(isMatch => {
        if (!isMatch){
-         return res.status(400).json({
-           password: 'Password does not match'
-         });
+        errors.password = 'Password does not match';
+        return res.status(400).json(errors);
+        
+        // return res.status(400).json({
+        //    password: 'Password does not match'
+        //  });
        }
        const payload = {
          id: user.id,
@@ -109,8 +135,12 @@ router.get(
   '/current', 
   passport.authenticate('jwt', {session: false}),
   (req, res) => {
-    res.json({msg: 'success'});
-
+   // res.json({msg: 'success'});
+    res.json({
+      id: req.user.id,                 //req.user will provide data from passport
+      email: req.user.email,
+      name: req.user.name
+    });
 })
 
 
