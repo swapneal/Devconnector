@@ -108,7 +108,7 @@ router.post('/login', (req, res) => {
          id: user.id,
          name: user.name,
          avatar: user.avatar
-       };
+       }; //while creating token avoid using PII
        jwt.sign(
          payload, 
          keys.secretOrKey,
@@ -120,8 +120,7 @@ router.post('/login', (req, res) => {
              success: true,
              token: 'Bearer ' + token
            })
-         }
-         )
+         })
      //  return res.json(payload);
      }) 
      .catch(err => console.log('Error in password comparsion: '+ err));

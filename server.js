@@ -30,7 +30,7 @@ app.use(bodyParser.json()); //using json while passing the data
 
 //Passport configuration
 app.use(passport.initialize());
-require('./config/passport')(passport);
+require('./config/passport')(passport); //this line is same as const passport = require('./config/passport');
 
 
 
