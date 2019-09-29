@@ -141,8 +141,8 @@ router.post(
           // Update
           Profile.findOneAndUpdate(
             { user: req.user.id },
-            { $set: profileFields },
-            { new: true }
+            { $set: profileFields }, //special keyword to edit the entire mongo db fields
+            { new: true }  //
           ).then(profile => res.json(profile));
         } else {
           // Create
@@ -276,7 +276,12 @@ router.delete(
         const removeIndex = profile.education
           .map(item => item.id)
           .indexOf(req.params.edu_id);
-
+          
+          if (removeIndex === -1) {
+            errors.educationnotfound = 'Education not found';
+            // Return any errors with 404 status
+            return res.status(404).json(errors);
+          }
         // Splice out of array
         profile.education.splice(removeIndex, 1);
 
