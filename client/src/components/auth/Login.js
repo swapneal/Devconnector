@@ -1,6 +1,10 @@
 import React, { Component } from 'react'
-import axios from 'axios';
+//import axios from 'axios';
 import classnames from 'classnames';
+import {connect} from 'react-redux';
+import {loginUser} from '../../actions/authActions';
+import PropTypes from 'prop-types';
+
 
 
 class Login extends Component {
@@ -27,14 +31,27 @@ class Login extends Component {
       email: this.state.email,
       password: this.state.password
     };
-    //axios is a way to call the api and relay the values. fetch is another way to do the same
-    axios
-      .post('/api/users/login', newUser)
-      .then(res => console.log(res.data))
-      .catch(err => this.setState({
-        errors: err.response.data
-      }));
+
+    this.props.loginUser(newUser);
+     //axios is a way to call the api and relay the values. fetch is another way to do the same
+    // axios
+    //   .post('/api/users/login', newUser)
+    //   .then(res => console.log(res.data))
+    //   .catch(err => this.setState({
+    //     errors: err.response.data
+    //   }));
   }
+
+
+  componentWillReceiveProps(nextProps){
+    if (nextProps.auth.isAuthenticated){
+      this.props.history.push('/dashboard'); //this is the same way that when user registers and navigate to login page, this would have been written in authActions.js after axios call
+    }
+    if(nextProps.errors){
+      this.setState({errors: nextProps.errors})
+    }
+  }
+
   render() {
     const {errors} = this.state;
    
@@ -64,5 +81,15 @@ class Login extends Component {
   }
 }
 
+Login.propTypes = {
+  loginUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
+}
 
-export default Login;
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+  errors: state.errors
+})
+
+export default connect(mapStateToProps, {loginUser}) (Login);
