@@ -50,7 +50,7 @@ if (process.env.NODE_ENV === 'production'){
   })
 }
 
-const port = 5800; //create a port to make express to listen on this port
+const port = process.env.PORT || 5800; //create a port to make express to listen on this port
 
 app.listen(port, () => console.log(`server running on port ${port}`)); //express will listen on the port
 
